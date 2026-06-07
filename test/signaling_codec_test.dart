@@ -37,11 +37,15 @@ void main() {
     );
 
     final compact = codec.encode(message);
+    final decoded = codec.decode(compact);
     final legacyJson = jsonEncode(message.toJson());
     final legacy = '${SignalingCodec.legacyPrefix}'
         '${base64Url.encode(utf8.encode(legacyJson))}';
 
     expect(compact.length, lessThan(legacy.length * 0.75));
+    expect(decoded.kind, SignalKind.answer);
+    expect(decoded.description.type, 'answer');
+    expect(decoded.description.sdp, sdp);
   });
 
   test('decodes compact signals from shareable URLs', () {
