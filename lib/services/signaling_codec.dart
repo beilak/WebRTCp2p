@@ -185,13 +185,14 @@ class SignalingCodec {
       for (var i = 0; i < 256; i++) i: String.fromCharCode(i),
     };
     var nextCode = 256;
-    var previous = dictionary[codes.first];
+    final firstEntry = dictionary[codes.first];
 
-    if (previous == null) {
+    if (firstEntry == null) {
       throw const FormatException('Compressed signal payload is malformed.');
     }
 
-    final output = <int>[]..addAll(previous.codeUnits);
+    var previous = firstEntry;
+    final output = <int>[...previous.codeUnits];
 
     for (final code in codes.skip(1)) {
       final inferredEntry = code == nextCode ? previous + previous[0] : null;
