@@ -1,0 +1,11 @@
+{
+  "name": "WebRTC P2P Demo",
+  "short_name": "P2P Call",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#F7F8FC",
+  "theme_color": "#446CFF",
+  "description": "Backend-free WebRTC demo call using QR/manual signaling.",
+  "orientation": "portrait-primary",
+  "icons": []
+}

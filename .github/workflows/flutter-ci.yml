@@ -1,0 +1,103 @@
+name: Flutter CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+env:
+  FLUTTER_VERSION: '3.41.9'
+
+jobs:
+  quality-and-web:
+    name: Analyze, test, and build web
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+      - name: Build web
+        run: flutter build web --release --base-href /${{ github.event.repository.name }}/
+
+      - name: Upload web build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-release
+          path: build/web
+
+      - name: Upload GitHub Pages artifact
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  ios-build:
+    name: Build unsigned iOS app
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Ensure Flutter iOS platform files exist
+        run: flutter create --platforms=ios --org com.example .
+
+      - name: Add iOS camera and microphone usage descriptions
+        run: |
+          /usr/libexec/PlistBuddy -c "Set :NSCameraUsageDescription Demo video calls need camera access." ios/Runner/Info.plist || \
+          /usr/libexec/PlistBuddy -c "Add :NSCameraUsageDescription string Demo video calls need camera access." ios/Runner/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :NSMicrophoneUsageDescription Demo video calls need microphone access." ios/Runner/Info.plist || \
+          /usr/libexec/PlistBuddy -c "Add :NSMicrophoneUsageDescription string Demo video calls need microphone access." ios/Runner/Info.plist
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build iOS without code signing
+        run: flutter build ios --release --no-codesign
+
+      - name: Upload unsigned iOS build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-release-unsigned
+          path: build/ios/iphoneos/Runner.app
+
+  deploy-pages:
+    name: Deploy web to GitHub Pages
+    if: github.ref == 'refs/heads/main'
+    needs: quality-and-web
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
