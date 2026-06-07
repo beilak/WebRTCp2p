@@ -23,7 +23,19 @@ class SignalingCodec {
       throw const FormatException('Signal description is missing SDP.');
     }
 
-    return '$prefix$kindCode:${_encodeBase64Url(utf8.encode(sdp))}';
+    final rawSdpBytes = utf8.encode(sdp);
+    final rawPayload = _encodeBase64Url(rawSdpBytes);
+    final compressedSdpBytes = _compressBytes(rawSdpBytes);
+
+    if (compressedSdpBytes != null &&
+        compressedSdpBytes.length < rawSdpBytes.length) {
+      final compressedPayload = _encodeBase64Url(compressedSdpBytes);
+      if (compressedPayload.length + 2 < rawPayload.length) {
+        return '$prefix$kindCode:z:$compressedPayload';
+      }
+    }
+
+    return '$prefix$kindCode:$rawPayload';
   }
 
   SignalingMessage decode(String value) {
@@ -79,7 +91,12 @@ class SignalingCodec {
       'a' => SignalKind.answer,
       _ => throw const FormatException('Compact signal kind is unknown.'),
     };
-    final sdp = utf8.decode(base64Url.decode(_normalizeBase64(encodedSdp)));
+    final sdpBytes = encodedSdp.startsWith('z:')
+        ? _decompressBytes(
+            base64Url.decode(_normalizeBase64(encodedSdp.substring(2))),
+          )
+        : base64Url.decode(_normalizeBase64(encodedSdp));
+    final sdp = utf8.decode(sdpBytes);
 
     return SignalingMessage(
       kind: kind,
@@ -114,6 +131,84 @@ class SignalingCodec {
     }
 
     return null;
+  }
+
+  List<int>? _compressBytes(List<int> bytes) {
+    if (bytes.isEmpty) {
+      return const [];
+    }
+
+    final dictionary = <String, int>{
+      for (var i = 0; i < 256; i++) String.fromCharCode(i): i,
+    };
+    var nextCode = 256;
+    var current = String.fromCharCode(bytes.first);
+    final codes = <int>[];
+
+    for (final byte in bytes.skip(1)) {
+      final character = String.fromCharCode(byte);
+      final combined = current + character;
+
+      if (dictionary.containsKey(combined)) {
+        current = combined;
+        continue;
+      }
+
+      codes.add(dictionary[current]!);
+      if (nextCode > 0xffff) {
+        return null;
+      }
+      dictionary[combined] = nextCode++;
+      current = character;
+    }
+
+    codes.add(dictionary[current]!);
+
+    return [
+      for (final code in codes) ...[code >> 8, code & 0xff],
+    ];
+  }
+
+  List<int> _decompressBytes(List<int> bytes) {
+    if (bytes.isEmpty) {
+      return const [];
+    }
+    if (bytes.length.isOdd) {
+      throw const FormatException('Compressed signal payload is malformed.');
+    }
+
+    final codes = <int>[
+      for (var index = 0; index < bytes.length; index += 2)
+        (bytes[index] << 8) | bytes[index + 1],
+    ];
+    final dictionary = <int, String>{
+      for (var i = 0; i < 256; i++) i: String.fromCharCode(i),
+    };
+    var nextCode = 256;
+    final firstEntry = dictionary[codes.first];
+
+    if (firstEntry == null) {
+      throw const FormatException('Compressed signal payload is malformed.');
+    }
+
+    var previous = firstEntry;
+    final output = <int>[...previous.codeUnits];
+
+    for (final code in codes.skip(1)) {
+      final inferredEntry = code == nextCode ? previous + previous[0] : null;
+      final entry = dictionary[code] ?? inferredEntry;
+      if (entry == null) {
+        throw const FormatException('Compressed signal payload is malformed.');
+      }
+
+      output.addAll(entry.codeUnits);
+      if (nextCode <= 0xffff) {
+        dictionary[nextCode++] = previous + entry[0];
+      }
+      previous = entry;
+    }
+
+    return output;
   }
 
   String _encodeBase64Url(List<int> bytes) {
