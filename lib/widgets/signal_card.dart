@@ -26,14 +26,14 @@ class SignalCard extends StatelessWidget {
             Text(title, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
             Text(
-              'Scan the QR, copy the one-line signal, or share the signal URL.',
+              'Scan the QR, copy the compact signal, or share the signal URL.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Colors.black54,
                   ),
             ),
             const SizedBox(height: 14),
             _CopyableValue(
-              label: 'One-line signal',
+              label: 'Compact signal',
               value: payload,
               copiedMessage: 'Signal copied',
             ),
@@ -73,7 +73,7 @@ class SignalCard extends StatelessWidget {
             if (payload.length > 2400) ...[
               const SizedBox(height: 10),
               const Text(
-                'This QR may be dense on small screens. Copying the one-line signal is the safest fallback.',
+                'This QR may be dense on small screens. Copying the compact signal is the safest fallback.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Color(0xFF9A6400), fontSize: 12),
               ),
@@ -92,10 +92,10 @@ class SignalCard extends StatelessWidget {
                 FilledButton.icon(
                   onPressed: () => _share(
                     text: payload,
-                    title: '$title one-line signal',
+                    title: '$title compact signal',
                   ),
                   icon: const Icon(Icons.short_text_rounded),
-                  label: const Text('Share signal'),
+                  label: const Text('Share compact signal'),
                 ),
                 OutlinedButton.icon(
                   onPressed: () => _share(
@@ -131,6 +131,10 @@ class _CopyableValue extends StatelessWidget {
   final String value;
   final String copiedMessage;
 
+  String get _lengthLabel => value.length == 1
+      ? '1 character'
+      : '${value.length} characters';
+
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
@@ -144,12 +148,25 @@ class _CopyableValue extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: const Color(0xFF4E5A78),
-                    fontWeight: FontWeight.w800,
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    label,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: const Color(0xFF4E5A78),
+                          fontWeight: FontWeight.w800,
+                        ),
                   ),
+                ),
+                Text(
+                  _lengthLabel,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: const Color(0xFF6C7693),
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             SelectableText(

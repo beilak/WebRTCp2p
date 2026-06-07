@@ -215,7 +215,7 @@ class _HeroHeader extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                 child: Text(
-                  'No backend • QR, URL, or one-line signaling • STUN only',
+                  'No backend • QR, URL, or compact signals • STUN only',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                     fontWeight: FontWeight.w700,
@@ -225,7 +225,7 @@ class _HeroHeader extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             Text(
-              'Demo video calls with QR, URL, or one-line signals.',
+              'Demo video calls with QR, URL, or compact signals.',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     color: const Color(0xFF151A2D),
                     fontWeight: FontWeight.w800,
@@ -274,7 +274,7 @@ class _QuickStartCard extends StatelessWidget {
             Text('Quick start', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 10),
             const Text(
-              'Device A creates an offer. Device B scans, opens the URL, or pastes the one-line signal and creates an answer. Device A applies the answer to connect.',
+              'Device A creates an offer. Device B scans, opens the URL, or pastes the compact signal and creates an answer. Device A applies the answer to connect.',
             ),
             const SizedBox(height: 16),
             Wrap(
@@ -300,7 +300,6 @@ class _QuickStartCard extends StatelessWidget {
   }
 }
 
-
 class _ConnectionOptionsCard extends StatelessWidget {
   const _ConnectionOptionsCard();
 
@@ -314,13 +313,14 @@ class _ConnectionOptionsCard extends StatelessWidget {
       ),
       _ConnectionOption(
         icon: Icons.short_text_rounded,
-        title: 'One-line signal',
+        title: 'Compact signal',
         description: 'Copy/paste the compact signal if the QR is too dense.',
       ),
       _ConnectionOption(
         icon: Icons.link_rounded,
         title: 'Signal URL',
-        description: 'Share a link with the signal in the URL fragment.',
+        description:
+            'Share a link with the compact signal in the URL fragment.',
       ),
       _ConnectionOption(
         icon: Icons.ios_share_rounded,
@@ -416,7 +416,10 @@ class _ManualSignalCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Manual fallback', style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              'Manual fallback',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 10),
             TextField(
               controller: controller,

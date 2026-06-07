@@ -1,17 +1,17 @@
 # WebRTC P2P Demo
 
-A clean Flutter demo app for one-to-one video calls without a backend signaling server. The app exchanges WebRTC offers and answers through QR codes, one-line text signals, shareable signal URLs, or the iOS share sheet.
+A clean Flutter demo app for one-to-one video calls without a backend signaling server. The app exchanges WebRTC offers and answers through QR codes, compact one-line text signals, shareable signal URLs, or the iOS share sheet.
 
 ## What is included
 
 - Flutter Material 3 app with a light, modern responsive UI.
 - Camera and microphone WebRTC call flow powered by `flutter_webrtc`.
-- Backend-free signaling:
+- Backend-free compact signaling:
   1. Device A creates an offer.
-  2. Device B receives the offer by QR scan, pasted one-line signal, or signal URL and creates an answer.
-  3. Device A receives the answer by QR scan, pasted one-line signal, or signal URL to complete the peer connection.
+  2. Device B receives the offer by QR scan, pasted compact signal, or signal URL and creates an answer.
+  3. Device A receives the answer by QR scan, pasted compact signal, or signal URL to complete the peer connection.
 - iOS-friendly alternatives when a QR code is too dense:
-  - one-line signal copy/paste,
+  - compact one-line signal copy/paste,
   - signal URL with the offer/answer in the URL fragment,
   - iOS share sheet through AirDrop, Messages, Notes, or another app.
 - GitHub Actions CI/CD for analyze, tests, web release artifacts, GitHub Pages deployment, and unsigned iOS release builds.
@@ -36,14 +36,14 @@ A clean Flutter demo app for one-to-one video calls without a backend signaling 
 4. On iPhone A, tap **Scan signal** and scan iPhone B's **Answer QR**.
 5. The video call should connect.
 
-### Flow B: one-line signal
+### Flow B: compact one-line signal
 
 Use this when the QR is too dense or the scanner cannot focus.
 
-1. On iPhone A, tap **Create offer** and copy/share the **One-line signal**.
+1. On iPhone A, tap **Create offer** and copy/share the **Compact signal**.
 2. Send it to iPhone B with AirDrop, Messages, Notes, or any app.
 3. On iPhone B, paste it into **Manual fallback** and tap **Apply signal**.
-4. Copy/share iPhone B's answer **One-line signal** back to iPhone A.
+4. Copy/share iPhone B's answer **Compact signal** back to iPhone A.
 5. On iPhone A, paste it into **Manual fallback** and tap **Apply signal**.
 
 ### Flow C: signal URL
@@ -51,11 +51,11 @@ Use this when the QR is too dense or the scanner cannot focus.
 Use this when you prefer sending a link instead of raw text.
 
 1. On iPhone A, tap **Create offer** and copy/share the **Signal URL**.
-2. Open that URL on iPhone B. The app reads the `#signal=...` URL fragment and applies the offer.
+2. Open that URL on iPhone B. The app reads the compact `#s=...` URL fragment and applies the offer.
 3. On iPhone B, copy/share the answer **Signal URL**.
 4. Open that answer URL on iPhone A to apply the answer and connect.
 
-The signal stays in the URL fragment, so it is not sent to the static web host as an HTTP query string.
+The signal stays in the URL fragment, so it is not sent to the static web host as an HTTP query string. Current links use the short `#s=...` fragment, and older `#signal=...` links are still accepted.
 
 ### Option: Local web run
 
@@ -94,5 +94,5 @@ flutter build web --release
 ## Notes and limitations
 
 - There is no TURN server. Calls work best on friendly networks. Some carrier, corporate, or symmetric NAT networks can block peer-to-peer media.
-- SDP payloads can be large after ICE candidate gathering. QR is convenient first, while one-line signals and signal URLs are reliable fallbacks.
+- SDP payloads can be large after ICE candidate gathering. The app now emits a shorter compact signal format, but QR may still be dense on restrictive networks with many ICE candidates. Compact one-line signals and signal URLs are reliable fallbacks.
 - No app backend stores or relays call metadata.
