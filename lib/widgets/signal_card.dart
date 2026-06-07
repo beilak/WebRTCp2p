@@ -19,7 +19,7 @@ class SignalCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -31,48 +31,54 @@ class SignalCard extends StatelessWidget {
                     color: Colors.black54,
                   ),
             ),
-            const SizedBox(height: 18),
-            Center(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: const Color(0xFFE2E7F5)),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: QrImageView(
-                    data: payload,
-                    version: QrVersions.auto,
-                    size: 236,
-                    gapless: false,
-                    eyeStyle: const QrEyeStyle(
-                      eyeShape: QrEyeShape.circle,
-                      color: Color(0xFF151A2D),
-                    ),
-                    dataModuleStyle: const QrDataModuleStyle(
-                      dataModuleShape: QrDataModuleShape.circle,
-                      color: Color(0xFF151A2D),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            if (payload.length > 2400) ...[
-              const SizedBox(height: 12),
-              const Text(
-                'This QR may be dense on small screens. The one-line signal or URL is the safest fallback.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Color(0xFF9A6400)),
-              ),
-            ],
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             _CopyableValue(
               label: 'One-line signal',
               value: payload,
               copiedMessage: 'Signal copied',
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final qrSize = constraints.maxWidth < 360 ? 150.0 : 176.0;
+
+                return Center(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: const Color(0xFFE2E7F5)),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: QrImageView(
+                        data: payload,
+                        version: QrVersions.auto,
+                        size: qrSize,
+                        gapless: false,
+                        eyeStyle: const QrEyeStyle(
+                          eyeShape: QrEyeShape.circle,
+                          color: Color(0xFF151A2D),
+                        ),
+                        dataModuleStyle: const QrDataModuleStyle(
+                          dataModuleShape: QrDataModuleShape.circle,
+                          color: Color(0xFF151A2D),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            if (payload.length > 2400) ...[
+              const SizedBox(height: 10),
+              const Text(
+                'This QR may be dense on small screens. Copying the one-line signal is the safest fallback.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Color(0xFF9A6400), fontSize: 12),
+              ),
+            ],
+            const SizedBox(height: 14),
             _CopyableValue(
               label: 'Signal URL',
               value: signalUrl,
@@ -130,11 +136,11 @@ class _CopyableValue extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: const Color(0xFFF7F8FC),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFE2E7F5)),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -148,7 +154,7 @@ class _CopyableValue extends StatelessWidget {
             const SizedBox(height: 8),
             SelectableText(
               value,
-              maxLines: 3,
+              maxLines: 2,
               style: const TextStyle(
                 color: Color(0xFF151A2D),
                 fontSize: 12,
